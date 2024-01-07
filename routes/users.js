@@ -47,7 +47,6 @@ router.post('/register', async (req, res,next) => {
   } catch (error) {
       res.status(400).send(error)
   }
-
 })
 router.get('/', async function (req, res, next) {
   let users = await Users.findAll({})
@@ -78,6 +77,16 @@ router.post('/generateToken', async (req, res, next) => {
   } catch (error) {
     res.status(400).send(error)
   }
+
+});
+router.get('/getToken', function (req, res, next) {
+  
+  /* Lee las cookies "jwt-token" y "error" */
+  let token = req.cookies['jwt-token']
+  let error = req.cookies['error']
+
+  /* Renderiza el contenido de las cookies en la vista */
+  res.render('gettoken', { title: 'User Login', token: token, error: error });
 
 });
 router.post('/postToken', async (req, res,next) => {
