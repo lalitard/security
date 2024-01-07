@@ -49,9 +49,90 @@ router.post('/register', async (req, res,next) => {
   }
 
 })
-router.get('/', async function(req, res, next) {
-  let users = await Users.findAll({ })
+router.get('/', async function (req, res, next) {
+  let users = await Users.findAll({})
   res.render('register', { title: 'User Registration', users: users });
+});
+router.post('/generateToken', async (req, res, next) => {
+
+  // Parámetros en el cuerpo del requerimiento
+  let { name, password } = req.body;
+
+  try {
+
+    // Encripte la contraseña
+    let salt = process.env.SALT
+    let hash = crypto.createHmac('sha512', salt).update(password).digest("base64");
+    let passwordHash = salt + "$" + hash
+
+    /* Obtenga el usuario y su rol */
+    let user = await Users.findOne({ where: { [Op.and]: [{ name: name }, { password: passwordHash }] } })
+    let relations = await UsersRoles.findOne({ where: { [Op.and]: [{ users_iduser: user.iduser }] } });
+    let roles = await Roles.findOne({ where: { [Op.and]: [{ idrole: relations.roles_idrole }] } });
+
+    /* Genera el token con los datos encriptados */
+    const accessToken = jwt.sign({ name: user.name, role: roles.name }, process.env.TOKEN_SECRET);
+
+    res.json({ accessToken });
+
+  } catch (error) {
+    res.status(400).send(error)
+  }
+
+});
+router.post('/postToken', async (req, res,next) => {
+
+  // Parámetros en el cuerpo del requerimiento
+  let { name, password } = req.body;
+
+  try {
+
+    // Encripte la contraseña
+    let salt = process.env.SALT
+    let hash = crypto.createHmac('sha512', salt).update(password).digest("base64");
+    let passwordHash = salt + "$" + hash
+
+    /* Obtenga el usuario y su rol */
+    let user = await Users.findOne({ where: { [Op.and]: [ { name: name }, { password: passwordHash } ] } })
+    let relations = await UsersRoles.findOne({ where: { [Op.and]: [ { users_iduser: user.iduser } ] } });
+    let roles = await Roles.findOne({ where: { [Op.and]: [ { idrole: relations.roles_idrole } ] } });
+
+    /* Genera el token con los datos encriptados */
+    const accessToken = jwt.sign({ name: user.name, role: roles.name }, process.env.TOKEN_SECRET);
+
+    /* Tiempo de expiración de la cookie: 30 segundos */
+    const options = {
+      expires: new Date(
+        Date.now() + 30 * 1000
+      )
+    }
+
+    /* Crea la cookie "jwt-token" con el accessToken */
+    res.cookie("jwt-token", accessToken, options)
+
+    /* Redirección al controlador para el verbo HTTP GET con la ruta /getToken */
+    res.redirect('/users/getToken')
+
+
+  } catch (error) {
+      
+    /* En caso de error, elimina la cookie */
+    res.clearCookie('jwt-token')
+
+    /* Tiempo de expiración de la cookie: 10 segundos */
+    const options = {
+      expires: new Date(
+        Date.now() + 10 * 1000
+      )
+    }
+        
+    res.cookie("error", "No token generated", options)
+
+    /* Redirige a la página original */
+    res.redirect('/users/getToken')
+
+  }
+
 });
 
 module.exports = router;
