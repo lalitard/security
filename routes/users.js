@@ -1,12 +1,17 @@
 var express = require('express');
 var router = express.Router();
+/* Módulo jsonwebtoken */
+const jwt = require('jsonwebtoken');
+/* Módulo crypto */
 let crypto = require('crypto');
+
 
 /* Referencia a los modelos */
 const Users = require('../models').users;
 const Roles = require('../models').roles;
 const UsersRoles = require('../models').users_roles;
 const { Op } = require("sequelize");
+
 
 /* GET users listing. */
 router.post('/register', async (req, res,next) => {
