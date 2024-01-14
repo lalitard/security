@@ -5,12 +5,52 @@
     "title": "REST API",
     "description": ""
   },
-  "host": "localhost:3002",
+  "host": "localhost:3000",
   "basePath": "/",
   "schemes": [
     "http"
   ],
   "paths": {
+    "/users/register": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "example": "any"
+                },
+                "password": {
+                  "example": "any"
+                },
+                "roleName": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/users/generateToken": {
       "post": {
         "description": "",
@@ -41,7 +81,7 @@
         }
       }
     },
-    "/": {
+    "/users/getToken": {
       "get": {
         "description": "",
         "responses": {
@@ -51,7 +91,7 @@
         }
       }
     },
-    "/users/register": {
+    "/users/postToken": {
       "post": {
         "description": "",
         "parameters": [
@@ -72,41 +112,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          }
-        }
-      }
-    },
-    "/users": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "example": "any"
-                },
-                "password": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
+          "default": {
+            "description": ""
           }
         }
       }
