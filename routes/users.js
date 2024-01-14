@@ -14,38 +14,38 @@ const { Op } = require("sequelize");
 
 
 /* GET users listing. */
-router.post('/register', async (req, res,next) => {
+router.post('/register', async (req, res, next) => {
 
   // Parámetros en el cuerpo del requerimiento
   let { name, password, roleName } = req.body;
 
   try {
 
-      // Encripte la contraseña con SALT
-      let salt = process.env.SALT
-      let hash = crypto.createHmac('sha512',salt).update(password).digest("base64");
-      let passwordHash = salt + "$" + hash
+    // Encripte la contraseña con SALT
+    let salt = process.env.SALT
+    let hash = crypto.createHmac('sha512', salt).update(password).digest("base64");
+    let passwordHash = salt + "$" + hash
 
-      // Guarde los datos del usuario
-      let user = await Users.create({ name: name, password: passwordHash })
+    // Guarde los datos del usuario
+    let user = await Users.create({ name: name, password: passwordHash })
 
-      // Obtenga el rol en función del nombre
-      let role = await Roles.findOne({ 
-        where: { 
-          [Op.and]: [
-            {name: roleName}
-          ]
-        } 
-      })
+    // Obtenga el rol en función del nombre
+    let role = await Roles.findOne({
+      where: {
+        [Op.and]: [
+          { name: roleName }
+        ]
+      }
+    })
 
-      // Cree la relación usuario-rol
-      await UsersRoles.create({ users_iduser: user.iduser, roles_idrole: role.idrole })
+    // Cree la relación usuario-rol
+    await UsersRoles.create({ users_iduser: user.iduser, roles_idrole: role.idrole })
 
-      // Redirige a la página de registros
-      res.redirect('/users')
+    // Redirige a la página de registros
+    res.redirect('/users')
 
   } catch (error) {
-      res.status(400).send(error)
+    res.status(400).send(error)
   }
 })
 router.get('/', async function (req, res, next) {
@@ -80,7 +80,7 @@ router.post('/generateToken', async (req, res, next) => {
 
 });
 router.get('/getToken', function (req, res, next) {
-  
+
   /* Lee las cookies "jwt-token" y "error" */
   let token = req.cookies['jwt-token']
   let error = req.cookies['error']
@@ -89,7 +89,7 @@ router.get('/getToken', function (req, res, next) {
   res.render('gettoken', { title: 'User Login', token: token, error: error });
 
 });
-router.post('/postToken', async (req, res,next) => {
+router.post('/postToken', async (req, res, next) => {
 
   // Parámetros en el cuerpo del requerimiento
   let { name, password } = req.body;
@@ -102,9 +102,9 @@ router.post('/postToken', async (req, res,next) => {
     let passwordHash = salt + "$" + hash
 
     /* Obtenga el usuario y su rol */
-    let user = await Users.findOne({ where: { [Op.and]: [ { name: name }, { password: passwordHash } ] } })
-    let relations = await UsersRoles.findOne({ where: { [Op.and]: [ { users_iduser: user.iduser } ] } });
-    let roles = await Roles.findOne({ where: { [Op.and]: [ { idrole: relations.roles_idrole } ] } });
+    let user = await Users.findOne({ where: { [Op.and]: [{ name: name }, { password: passwordHash }] } })
+    let relations = await UsersRoles.findOne({ where: { [Op.and]: [{ users_iduser: user.iduser }] } });
+    let roles = await Roles.findOne({ where: { [Op.and]: [{ idrole: relations.roles_idrole }] } });
 
     /* Genera el token con los datos encriptados */
     const accessToken = jwt.sign({ name: user.name, role: roles.name }, process.env.TOKEN_SECRET);
@@ -124,7 +124,7 @@ router.post('/postToken', async (req, res,next) => {
 
 
   } catch (error) {
-      
+
     /* En caso de error, elimina la cookie */
     res.clearCookie('jwt-token')
 
@@ -134,7 +134,7 @@ router.post('/postToken', async (req, res,next) => {
         Date.now() + 10 * 1000
       )
     }
-        
+
     res.cookie("error", "No token generated", options)
 
     /* Redirige a la página original */
